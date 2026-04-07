@@ -15,13 +15,13 @@ Hindi compiled plugins for Nuvio.
 
 | Provider | Language | Quality | NuvioApp | NuvioTV |
 |---|---|---|---|---|
-| AllMovieLand | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
-| CinemaCity | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
-| CineStream | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 4K/ 1080p / 720p | ✅ | ✅ |
+| [![allmovieland.png](https://i.postimg.cc/tTv34Wz4/allmovieland.png)](https://postimg.cc/S282ZX5B) AllMovieLand | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
+| [![cinemacity.png](https://i.postimg.cc/G2gFmGj9/cinemacity.png)](https://postimg.cc/dkdkW7pK) CinemaCity | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
+| [![cinestream.png](https://i.postimg.cc/k4YQgKy5/cinestream.png)](https://postimg.cc/yg9gfJtq) CineStream | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 4K/ 1080p / 720p | ✅ | ✅ |
 | FlixIndia | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
-| HDMovie2 |  🇮🇳 | 1080p / 720p | ✅ | ✅ |
-| HindMoviez | 🇮🇳 | 1080p / 720p | ✅ | ✅ |
-| MovieBlast | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
+| [![HDMovie2.png](https://i.postimg.cc/85XRzMbF/HDMovie2.png)](https://postimg.cc/FdcdPf8m) HDMovie2 |  🇮🇳 | 1080p / 720p | ✅ | ✅ |
+| [![hindmoviez.png](https://i.postimg.cc/tTv34WzZ/hindmoviez.png)](https://postimg.cc/S282ZX3k) HindMoviez | 🇮🇳 | 1080p / 720p | ✅ | ✅ |
+| [![movieblast.png](https://i.postimg.cc/C1rGxk4L/movieblast.png)](https://postimg.cc/r0W0hdbv) MovieBlast | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
 | MovieBox |  🇮🇳 | 1080p / 720p | ✅ | ✅ |
 | Movies4u | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
 | MoviesDrive | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
