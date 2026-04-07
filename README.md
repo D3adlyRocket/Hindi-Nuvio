@@ -7,7 +7,7 @@ Hindi compiled plugins for Nuvio.
 2. Go to **Settings → Local Scrapers**
 3. Add this repository URL:
    ```
-   https://raw.githubusercontent.com/D3adlyRocket/Hindi-Nuvio/refs/heads/main/manifest.js
+   https://raw.githubusercontent.com/D3adlyRocket/Hindi-Nuvio/refs/heads/main/manifest.json
    ```
 4. Enable the scrapers you want to use
 
