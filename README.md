@@ -24,6 +24,6 @@ Hindi compiled plugins for Nuvio.
 | [![movieblast.png](https://i.postimg.cc/C1rGxk4L/movieblast.png)](https://postimg.cc/r0W0hdbv) MovieBlast | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
 | MovieBox |  🇮🇳 | 1080p / 720p | ✅ | ✅ |
 | Movies4u | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
-| MoviesDrive | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
-| NetMirror| 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
-| StreamFlix | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
+| [![moviesdrive.png](https://i.postimg.cc/PrKhFqtK/moviesdrive.png)](https://postimg.cc/56HZXbQF) MoviesDrive | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
+| [![netmirror.png](https://i.postimg.cc/sXFMmJyg/netmirror.png)](https://postimg.cc/B8gZQHXr) NetMirror| 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
+| [![streamflix.png](https://i.postimg.cc/sXFMmJyD/streamflix.png)](https://postimg.cc/McDZKVvh) StreamFlix | 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🇮🇳 | 1080p / 720p | ✅ | ✅ |
