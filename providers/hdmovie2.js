@@ -1,9 +1,9 @@
 // HDMovie2 Provider for Nuvio
 // Bollywood + Hollywood Hindi Dubbed + Web Series
-// NO async/await! Only .then() chains!
+// Updated with .equipment domain and HLS stream fixes
 
 var TMDB_KEY = 'd80ba92bc7cefe3359668d30d06f3305'
-var BASE = 'https://hdmovie2.equipment'
+var BASE = 'https://hdmovie2.equipment' // Updated Domain 🌐
 var CDN = 'https://hdm2.ink'
 var UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
 
@@ -47,6 +47,7 @@ function searchSite(title, year) {
 
       while ((articleMatch = articleRegex.exec(html)) !== null) {
         var articleHtml = articleMatch[1]
+        // Updated Regex to match .equipment domain 🛠️
         var linkMatch = articleHtml.match(/href="(https:\/\/hdmovie2\.equipment\/movies\/([^"\/]+)\/)"/)
         if (!linkMatch) continue
         if (linkMatch[1].includes('/feed/')) continue
@@ -112,9 +113,16 @@ function getHdm2Stream(playerUrl) {
         .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
+      
+      // Fix: Force .m3u8 extension for ExoPlayer 📺
+      var finalUrl = CDN + streamPath;
+      if (!finalUrl.includes('.m3u8')) {
+        finalUrl += '#index.m3u8';
+      }
+
       console.log('[HDMovie2] hdm2 stream found!')
       return {
-        url: CDN + streamPath,
+        url: finalUrl,
         headers: { 'Referer': CDN + '/', 'Origin': CDN, 'User-Agent': UA }
       }
     })
@@ -123,14 +131,12 @@ function getHdm2Stream(playerUrl) {
 function getMolopStream(playerUrl) {
   return httpGet(playerUrl, { 'Referer': BASE + '/' })
     .then(function(html) {
-      // Hash is 3rd param in: sniff("videoId","1","HASH",...)
       var sniffMatch = html.match(/sniff\s*\(\s*["'][^"']+["']\s*,\s*["'][^"']+["']\s*,\s*["']([a-f0-9]+)["']/)
       if (!sniffMatch) {
         console.log('[HDMovie2] No sniff hash in molop page')
         return null
       }
-      var hash = sniffMatch[1]
-      // Use .m3u8 extension so ExoPlayer recognizes it properly
+      var hash = sniffMatch[SniffMatch.length - 1]
       var m3u8Url = 'https://molop.art/m3u8/1/' + hash + '/master.m3u8?s=1&cache=1'
       console.log('[HDMovie2] molop hash: ' + hash)
       return {
@@ -172,7 +178,6 @@ function tryGetStream(postId, movieUrl) {
       var cleaned = embedUrl.replace(/\\\//g, '/')
       console.log('[HDMovie2] Server ' + nume + ': ' + cleaned.substring(0, 80))
 
-      // hdm2.ink player
       var hdm2Match = cleaned.match(/src="(https:\/\/hdm2\.ink\/play\?v=[^"]+)"/)
       if (hdm2Match) {
         return getHdm2Stream(hdm2Match[1]).then(function(s) {
@@ -181,7 +186,6 @@ function tryGetStream(postId, movieUrl) {
         })
       }
 
-      // molop.art player
       var molopMatch = cleaned.match(/src="(https:\/\/molop\.art\/watch\?v=[^"]+)"/)
       if (molopMatch) {
         return getMolopStream(molopMatch[1]).then(function(s) {
@@ -190,13 +194,11 @@ function tryGetStream(postId, movieUrl) {
         })
       }
 
-      // Skip AbyssCDN
       if (cleaned.includes('prvs.top')) {
         console.log('[HDMovie2] Skipping AbyssCDN')
         nume++; return tryNume()
       }
 
-      // Skip ok.ru
       if (cleaned.includes('ok.ru')) {
         console.log('[HDMovie2] Skipping ok.ru')
         nume++; return tryNume()
