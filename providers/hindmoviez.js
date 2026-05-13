@@ -14,113 +14,120 @@
  * ╚══════════════════════════════════════════════════════════════════════════════╝
  */
 
-'use strict';
+"use strict";
 
-var BASE_URL     = 'https://hindmovie.ltd';
-var TMDB_API_KEY = '439c478a771f35c05022f9feabcca01c';
-var PLUGIN_TAG   = '[HindMoviez]';
-var HM_WORKER    = 'https://hindmoviez.s4nch1tt.workers.dev';
+var TMDB_API_KEY = "439c478a771f35c05022f9feabcca01c";
+var MURPH_BASE = "https://badboysxs-morpheus.hf.space"; 
 
-var DEFAULT_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
-};
-
-function hmProxyUrl(rawUrl) {
-  if (!rawUrl) return rawUrl;
-  return HM_WORKER + '/hm/proxy?url=' + encodeURIComponent(rawUrl);
+async function fetchJson(url) {
+    try {
+        const resp = await fetch(url, { method: "GET" });
+        return resp.ok ? await resp.json() : null;
+    } catch (e) { return null; }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// The Secret Sauce: A fail-safe Fetch that works on TV & Mobile
-// ─────────────────────────────────────────────────────────────────────────────
-function safeFetch(url) {
-  return fetch(url, { headers: DEFAULT_HEADERS, redirect: 'follow' })
-    .then(function(res) { 
-      if (!res.ok) return null;
-      return res.text(); 
-    })
-    .catch(function() { return null; });
+async function resolveMediaDetails(id, type) {
+    const tmdbType = type === "series" ? "tv" : "movie";
+    let imdbId = String(id).startsWith("tt") ? id : null;
+    let title = "Movie";
+
+    const detailsUrl = `https://api.themoviedb.org/3/${tmdbType}/${id}?api_key=${TMDB_API_KEY}`;
+    const externalIdsUrl = `https://api.themoviedb.org/3/${tmdbType}/${id}/external_ids?api_key=${TMDB_API_KEY}`;
+    
+    const [details, external] = await Promise.all([
+        fetchJson(detailsUrl),
+        fetchJson(externalIdsUrl)
+    ]);
+
+    if (details) {
+        title = details.title || details.name || "Movie";
+    }
+    
+    if (!imdbId && external) {
+        imdbId = external.imdb_id;
+    }
+
+    return { imdbId, title };
 }
 
-function getStreams(tmdbId, type, season, episode) {
-  var isSeries = (type === 'series' || type === 'tv');
-  var tmdbUrl = 'https://api.themoviedb.org/3/' + (isSeries ? 'tv' : 'movie') + '/' + tmdbId + '?api_key=' + TMDB_API_KEY;
+function isHindMovieSource(stream) {
+    const name = String(stream.name || "").toLowerCase();
+    const title = String(stream.title || "").toLowerCase();
+    const hasHindMovie = name.includes("hindmovie") || title.includes("hindmovie");
+    const isNotHDHub = !name.includes("hdhub") && !title.includes("hdhub");
+    return hasHindMovie && isNotHDHub;
+}
 
-  return fetch(tmdbUrl)
-    .then(function(res) { return res.json(); })
-    .then(function(details) {
-      if (!details) return [];
-      var query = isSeries ? details.name : details.title;
-      return safeFetch(BASE_URL + '/?s=' + encodeURIComponent(query));
-    })
-    .then(function(html) {
-      if (!html) return [];
-      // Look for article links
-      var linkMatch = html.match(/<h2[^>]*class="entry-title"[^>]*>\s*<a\s[^>]*href="([^"]+)"/i) || html.match(/<a\s[^>]*href="([^"]+)"[^>]*rel="bookmark"/i);
-      if (!linkMatch) return [];
-      return safeFetch(linkMatch[1]);
-    })
-    .then(function(pageHtml) {
-      if (!pageHtml) return [];
+async function getStreams(id, type, season, episode) {
+    const { imdbId, title: movieTitle } = await resolveMediaDetails(id, type);
+    if (!imdbId) return [];
 
-      var streams = [];
-      var resolvePromises = [];
-      // Split page into chunks by H3 so we don't mix up quality info
-      var sections = pageHtml.split(/<h3/i);
+    const endpoint = (type === "series") 
+        ? `${MURPH_BASE}/stream/series/${imdbId}:${season}:${episode}.json`
+        : `${MURPH_BASE}/stream/movie/${imdbId}.json`;
 
-      for (var i = 1; i < sections.length; i++) {
-        var chunk = sections[i];
-        var mvMatch = chunk.match(/href="(https:\/\/mvlink\.site\/[^"]+)"/i);
-        
-        if (mvMatch) {
-          // Extract info from the H3 text (before the </h3>)
-          var headingText = chunk.split('</h3>')[0];
-          var qMatch = headingText.match(/\b(2160p|1080p|720p|480p|4K)\b/i);
-          var quality = qMatch ? qMatch[1].toLowerCase().replace('4k', '2160p') : '720p';
-          var sizeMatch = headingText.match(/\[([0-9.]+\s*(?:MB|GB))\]/i);
-          var size = sizeMatch ? sizeMatch[1] : '';
+    const payload = await fetchJson(endpoint);
+    if (!payload || !payload.streams) return [];
 
-          (function(mvUrl, q, sz) {
-            var p = safeFetch(mvUrl)
-              .then(function(mvHtml) {
-                if (!mvHtml) return null;
-                var hs = mvHtml.match(/href="(https:\/\/hshare\.ink\/[^"]+)"/i);
-                return hs ? safeFetch(hs[1]) : null;
-              })
-              .then(function(hsHtml) {
-                if (!hsHtml) return null;
-                var hp = hsHtml.match(/href="([^"]+)"[^>]*>HPage<\/a>/i);
-                return hp ? safeFetch(hp[1]) : null;
-              })
-              .then(function(hcHtml) {
-                if (!hcHtml) return;
-                // Regex for server links: matches Server 1, Server 2, etc.
-                var srvRe = /<a[^>]*href="([^"]+)"[^>]*>(Server\s+\d+)<\/a>/gi;
-                var sMatch;
-                while ((sMatch = srvRe.exec(hcHtml)) !== null) {
-                  streams.push({
-                    name: '🎬 HindMoviez | ' + sMatch[2] + ' | ' + q.toUpperCase(),
-                    title: '📺 ' + q.toUpperCase() + ' • 💾 ' + sz + '\nSanchit Plugin (TV Mode)',
-                    url: hmProxyUrl(sMatch[1]),
-                    quality: q,
-                    behaviorHints: { notWebReady: false }
-                  });
+    return payload.streams
+        .filter(isHindMovieSource) 
+        .map(s => {
+            let finalUrl = s.url;
+            if (finalUrl && !finalUrl.startsWith("http")) {
+                finalUrl = MURPH_BASE + (finalUrl.startsWith("/") ? "" : "/") + finalUrl;
+            }
+
+            return {
+                name: `HindMovie | ${movieTitle}`,
+                title: s.title || "HindMovie Stream",
+                url: finalUrl,
+                behaviorHints: { 
+                    // Changed bingeGroup to force Android TV to refresh its list
+                    bingeGroup: "hind-movie-v3-refresh" 
                 }
-              });
-            resolvePromises.push(p);
-          })(mvMatch[1], quality, size);
-        }
-      }
-
-      return Promise.all(resolvePromises).then(function() {
-        return streams;
-      });
-    })
-    .catch(function(err) {
-      return [];
-    });
+            };
+        });
 }
 
-if (typeof module !== 'undefined') { module.exports = { getStreams: getStreams }; } 
-else { global.getStreams = getStreams; }
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { getStreams: getStreams };
+} else {
+    global.getStreams = getStreams;
+}
+
+/**
+ * ANDROID TV COMPATIBILITY NORMALIZER
+ */
+function __doomNormalizeStream(rawStream) {
+    if (!rawStream || !rawStream.url) return null;
+
+    return {
+        // Force the name to exactly what we defined, no suffixes
+        name: rawStream.name,
+        title: rawStream.title,
+        url: rawStream.url,
+        behaviorHints: rawStream.behaviorHints
+    };
+}
+
+(function() {
+    if (typeof getStreams !== "function" || getStreams.__doomNormalizedWrapped) return;
+
+    var __doomOriginalGetStreams = getStreams;
+    var __doomNormalizedGetStreams = function() {
+        return Promise.resolve(__doomOriginalGetStreams.apply(this, arguments))
+            .then(function(streams) {
+                if (!Array.isArray(streams)) return [];
+                return streams.map(__doomNormalizeStream).filter(Boolean);
+            });
+    };
+
+    __doomNormalizedGetStreams.__doomNormalizedWrapped = true;
+    getStreams = __doomNormalizedGetStreams;
+
+    if (typeof module !== "undefined" && module.exports) {
+        module.exports.getStreams = getStreams;
+    } else if (typeof global !== "undefined") {
+        global.getStreams = getStreams;
+    }
+})();
