@@ -63,15 +63,12 @@ function get(url, opts, timeout) {
       if (typeof AbortSignal !== "undefined" && AbortSignal.timeout)
         sig = AbortSignal.timeout(timeout);
       var hdrs = {};
-      for (var k in BASE_HEADERS)
-        hdrs[k] = BASE_HEADERS[k];
+      for (var k in BASE_HEADERS) hdrs[k] = BASE_HEADERS[k];
       if (opts && opts.headers) {
-        for (var k2 in opts.headers)
-          hdrs[k2] = opts.headers[k2];
+        for (var k2 in opts.headers) hdrs[k2] = opts.headers[k2];
       }
       var merged = __spreadProps(__spreadValues({}, opts || {}), { headers: hdrs });
-      if (sig)
-        merged.signal = sig;
+      if (sig) merged.signal = sig;
       return yield fetch(url, merged);
     } catch (e) {
       err("fetch: " + url.substring(0, 80) + " -> " + (e.message || e.name || "unknown"));
@@ -96,8 +93,7 @@ function getText(url, opts, timeout) {
 function getJson(url, opts, timeout) {
   return __async(this, null, function* () {
     var t = yield getText(url, opts, timeout);
-    if (!t)
-      return null;
+    if (!t) return null;
     try {
       return JSON.parse(t);
     } catch (e) {
@@ -117,48 +113,16 @@ function getHtml(url, opts, timeout) {
 }
 function parseQ(t) {
   t = (t || "").toUpperCase();
-  if (t.indexOf("2160") >= 0 || t.indexOf("4K") >= 0)
-    return "2160p";
-  if (t.indexOf("1080") >= 0)
-    return "1080p";
-  if (t.indexOf("720") >= 0)
-    return "720p";
-  if (t.indexOf("480") >= 0)
-    return "480p";
+  if (t.indexOf("2160") >= 0 || t.indexOf("4K") >= 0) return "2160p";
+  if (t.indexOf("1080") >= 0) return "1080p";
+  if (t.indexOf("720") >= 0) return "720p";
+  if (t.indexOf("480") >= 0) return "480p";
   return "HD";
-}
-function similar(s1, s2, year, isTv) {
-  if (!s1 || !s2)
-    return 0;
-  var c = function(s) {
-    return s.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(Boolean);
-  };
-  var w1 = c(s1);
-  var w2 = c(s2);
-  if (w2.length < w1.length)
-    return 0;
-  for (var i = 0; i < w1.length; i++) {
-    if (w1[i] !== w2[i])
-      return 0;
-  }
-  var score = 0.8;
-  if (year) {
-    var ym = s2.match(/\b(19|20)\d{2}\b/);
-    if (ym) {
-      if (Math.abs(parseInt(ym[0]) - parseInt(year)) <= 1) {
-        score += 0.2;
-      } else {
-        return 0;
-      }
-    }
-  }
-  return score;
 }
 function dedupe(arr) {
   var seen = {};
   return (arr || []).filter(function(s) {
-    if (!s || !s.url || seen[s.url])
-      return false;
+    if (!s || !s.url || seen[s.url]) return false;
     seen[s.url] = true;
     return true;
   });
@@ -169,7 +133,12 @@ function makeStream(name, label, url, quality, hdrs) {
     title: label,
     url,
     quality,
-    headers: hdrs || {}
+    behaviorHints: {
+      notWebReady: true,
+      proxyHeaders: {
+        request: hdrs || {}
+      }
+    }
   };
 }
 function getMedia(id, type) {
@@ -237,8 +206,7 @@ function parsePage(url, season) {
   return __async(this, null, function* () {
     log("parsing page: " + url);
     var $ = yield getHtml(url, { headers: { "Referer": MAIN_URL + "/" } }, 12e3);
-    if (!$)
-      return [];
+    if (!$) return [];
     var links = [];
     var isTv = season != null;
     if (isTv) {
@@ -254,11 +222,9 @@ function parsePage(url, season) {
           $(el).find('a[href*="mdrive.lol/archive/"]').each(function() {
             var href = $(this).attr("href");
             var label = $(this).text().trim();
-            if (!href || label.toLowerCase().indexOf("zip") >= 0)
-              return;
+            if (!href || label.toLowerCase().indexOf("zip") >= 0) return;
             var mid2 = href.match(/archive\/(\d+)/);
-            if (mid2)
-              links.push({ id: mid2[1], url: href, label, q: parseQ(label) });
+            if (mid2) links.push({ id: mid2[1], url: href, label, q: parseQ(label) });
           });
         }
       });
@@ -267,11 +233,9 @@ function parsePage(url, season) {
       $('a[href*="mdrive.lol/archive/"], a[href*="mdrive.lol/"]').each(function(i, el) {
         var href = $(el).attr("href");
         var label = $(el).text().trim() || "HD";
-        if (label.toLowerCase().indexOf("zip") >= 0 && isTv)
-          return;
+        if (label.toLowerCase().indexOf("zip") >= 0 && isTv) return;
         var mid2 = href.match(/archive\/(\d+)/);
-        if (mid2)
-          links.push({ id: mid2[1], url: href, label, q: parseQ(label) });
+        if (mid2) links.push({ id: mid2[1], url: href, label, q: parseQ(label) });
       });
     }
     if (links.length === 0) {
@@ -281,8 +245,7 @@ function parsePage(url, season) {
         var seen = {};
         for (var bi = 0; bi < bodyMatches.length; bi++) {
           var murl = bodyMatches[bi];
-          if (seen[murl])
-            continue;
+          if (seen[murl]) continue;
           seen[murl] = true;
           var mid = murl.match(/archive\/(\d+)/);
           if (mid) {
@@ -296,8 +259,7 @@ function parsePage(url, season) {
       var srLinks = [];
       $("a").each(function(i, el) {
         var href = $(el).attr("href");
-        if (!href)
-          return;
+        if (!href) return;
         if (href.indexOf("search-recover.php") >= 0) {
           var dup = false;
           for (var di = 0; di < srLinks.length; di++) {
@@ -343,12 +305,10 @@ function resolveSearchRecover(srUrl, label) {
       srUrl = srUrl.replace(/&amp;/g, "&");
       var fromAc = null;
       var fa = srUrl.match(/[?&]from_ac=([a-zA-Z0-9_\-]+)/);
-      if (fa)
-        fromAc = fa[1];
+      if (fa) fromAc = fa[1];
       var qParam = null;
       var qm = srUrl.match(/[?&]q=([^&]+)/);
-      if (qm)
-        qParam = qm[1];
+      if (qm) qParam = qm[1];
       if (!fromAc || !qParam) {
         log("search-recover: missing from_ac or q");
         return null;
@@ -357,10 +317,8 @@ function resolveSearchRecover(srUrl, label) {
       try {
         var padded = qParam;
         var m = padded.length % 4;
-        if (m === 2)
-          padded += "==";
-        else if (m === 3)
-          padded += "=";
+        if (m === 2) padded += "==";
+        else if (m === 3) padded += "=";
         decodedQ = atob(padded);
       } catch (e) {
       }
@@ -381,14 +339,10 @@ function resolveSearchRecover(srUrl, label) {
       var results = null;
       try {
         var parsed = JSON.parse(res);
-        if (Array.isArray(parsed))
-          results = parsed;
-        else if (parsed.data && Array.isArray(parsed.data))
-          results = parsed.data;
-        else if (parsed.results && Array.isArray(parsed.results))
-          results = parsed.results;
-        else if (parsed.hits)
-          results = parsed.hits;
+        if (Array.isArray(parsed)) results = parsed;
+        else if (parsed.data && Array.isArray(parsed.data)) results = parsed.data;
+        else if (parsed.results && Array.isArray(parsed.results)) results = parsed.results;
+        else if (parsed.hits) results = parsed.hits;
       } catch (e) {
         log("search-recover: json parse failed, trying raw url");
         var res2 = yield getText(srUrl, {
@@ -401,12 +355,9 @@ function resolveSearchRecover(srUrl, label) {
         if (res2) {
           try {
             var parsed2 = JSON.parse(res2);
-            if (Array.isArray(parsed2))
-              results = parsed2;
-            else if (parsed2.data && Array.isArray(parsed2.data))
-              results = parsed2.data;
-            else if (parsed2.results && Array.isArray(parsed2.results))
-              results = parsed2.results;
+            if (Array.isArray(parsed2)) results = parsed2;
+            else if (parsed2.data && Array.isArray(parsed2.data)) results = parsed2.data;
+            else if (parsed2.results && Array.isArray(parsed2.results)) results = parsed2.results;
           } catch (e2) {
           }
         }
@@ -448,10 +399,20 @@ function parseArchive(url, episode) {
     $("a").each(function(i, el) {
       totalLinks++;
       var h = $(el).attr("href");
-      if (!h)
-        return;
-      if (isHostLink(h))
-        extractHostLink(h, hosts);
+      if (!h) return;
+      if (isEp) {
+        var blockText = $(el).parent().parent().text() || "";
+        if (!blockText) blockText = $(el).parent().text() || "";
+        var epMatch = blockText.match(/(?:EP|Episode|E)[^a-zA-Z0-9]*0*(\d+)/i);
+        if (epMatch) {
+          var epNum = parseInt(epMatch[1]);
+          if (epNum !== episode) {
+            log("Skipping wrong episode link: " + epNum + " (wanted " + episode + ")");
+            return;
+          }
+        }
+      }
+      if (isHostLink(h)) extractHostLink(h, hosts);
     });
     log("archive: scanned " + totalLinks + " <a> tags, found " + hosts.length + " hoster links");
     if (hosts.length === 0 && htmlLen > 200) {
@@ -470,8 +431,7 @@ function parseArchive(url, episode) {
           }
           if (!dup) {
             var idm = u.match(/drive\/([a-z0-9]+)/);
-            if (idm)
-              hosts.push({ type: "hubcloud", url: u, id: idm[1] });
+            if (idm) hosts.push({ type: "hubcloud", url: u, id: idm[1] });
           }
         }
       }
@@ -488,8 +448,7 @@ function parseArchive(url, episode) {
           }
           if (!dup) {
             var idm = u.match(/file\/([a-zA-Z0-9]+)/);
-            if (idm)
-              hosts.push({ type: "gdflix", url: u, id: idm[1] });
+            if (idm) hosts.push({ type: "gdflix", url: u, id: idm[1] });
           }
         }
       }
@@ -499,18 +458,15 @@ function parseArchive(url, episode) {
   });
 }
 function isHostLink(href) {
-  if (!href)
-    return false;
+  if (!href) return false;
   return href.indexOf("hubcloud.") >= 0 || href.indexOf("gdflix.") >= 0;
 }
 function extractHostLink(href, arr) {
-  if (!href || !arr)
-    return;
+  if (!href || !arr) return;
   var hm = href.match(/(?:hubcloud\.[a-z]+\/drive\/([a-z0-9]+))/i);
   if (hm) {
     for (var di = 0; di < arr.length; di++) {
-      if (arr[di].url === href)
-        return;
+      if (arr[di].url === href) return;
     }
     arr.push({ type: "hubcloud", url: href, id: hm[1] });
     return;
@@ -518,8 +474,7 @@ function extractHostLink(href, arr) {
   var gm = href.match(/(?:gdflix\.[a-z]+\/file\/([a-zA-Z0-9]+))/i);
   if (gm) {
     for (var di = 0; di < arr.length; di++) {
-      if (arr[di].url === href)
-        return;
+      if (arr[di].url === href) return;
     }
     arr.push({ type: "gdflix", url: href, id: gm[1] });
     return;
@@ -539,16 +494,13 @@ function resolveHubcloud(url, label) {
           "Cookie": "xla=s4t"
         }
       }, 12e3);
-      if (!html)
-        return [];
+      if (!html) return [];
       var bridgeUrl = null;
       var vm = html.match(/var\s+url\s*=\s*'([^']+)'/);
-      if (vm)
-        bridgeUrl = vm[1];
+      if (vm) bridgeUrl = vm[1];
       if (!bridgeUrl) {
         var hm = html.match(/<a[^>]*id=["']download["'][^>]*href=["']([^"']+)["']/);
-        if (hm)
-          bridgeUrl = hm[1];
+        if (hm) bridgeUrl = hm[1];
       }
       if (!bridgeUrl) {
         log("hubcloud: no bridge url found");
@@ -561,8 +513,7 @@ function resolveHubcloud(url, label) {
           "Cookie": "xla=s4t"
         }
       }, 15e3);
-      if (!bridgeHtml)
-        return [];
+      if (!bridgeHtml) return [];
       var fslUrl = null;
       var tm = bridgeHtml.match(/https?:\/\/[^\s"'<>]+\?token=\d+/);
       if (tm) {
@@ -614,36 +565,25 @@ function getStreams(tmdbId, mediaType, season, episode) {
       log('resolved: "' + info.title + '" (' + (info.year || "?") + ")");
       var safeSeason = season != null ? Number(season) : null;
       var safeEpisode = episode != null ? Number(episode) : null;
-      var results = yield searchSite(info.title);
-      if (results.length === 0 && info.year) {
-        results = yield searchSite(info.title + " " + info.year);
-      }
-      if (results.length === 0 && info.imdb) {
-        results = yield searchSite(info.imdb);
-      }
-      var best = null, bestScore = 0;
+      var best = null;
       if (info.imdb) {
-        for (var i = 0; i < results.length; i++) {
-          if (results[i].imdb === info.imdb) {
-            best = results[i];
-            bestScore = 1;
-            log("imdb match: " + best.title + " (id=" + info.imdb + ")");
-            break;
-          }
+        log("searching by imdb id: " + info.imdb);
+        var results = yield searchSite(info.imdb);
+        if (results.length > 0) {
+          best = results[0];
+          log("imdb exact match: " + best.title + " (id=" + info.imdb + ")");
         }
       }
       if (!best) {
-        for (var i = 0; i < results.length; i++) {
-          var score = similar(info.title, results[i].title, info.year, isTv);
-          if (score > bestScore) {
-            bestScore = score;
-            best = results[i];
-          }
+        log("searching by title: " + info.title);
+        var results = yield searchSite(info.title);
+        if (results.length > 0) {
+          best = results[0];
+          log("title match fallback: " + best.title);
         }
-        log("title match: " + (best ? best.title + " (score=" + bestScore.toFixed(2) + ")" : "none"));
       }
-      if (!best || bestScore < 0.4) {
-        log("no confident match, returning []");
+      if (!best) {
+        log("no match found, returning []");
         return [];
       }
       var pageUrl = MAIN_URL + best.href;
@@ -676,8 +616,7 @@ function getStreams(tmdbId, mediaType, season, episode) {
                   return h.type === "hubcloud";
                 });
               }
-              if (hcHosts.length === 0)
-                return [];
+              if (hcHosts.length === 0) return [];
               var fullTitle = info.title + epLabel + " " + al.q;
               var hcTasks = hcHosts.map(function(h) {
                 return resolveHubcloud(h.url, fullTitle);
