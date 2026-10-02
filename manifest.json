@@ -1,6 +1,6 @@
 {
-  "name": "Hindi-Nuvio",
-  "version": "1.0.0",
+  "name": "Hindi-Lentra-Ritam",
+  "version": "1.1.0",
   "scrapers": [
     {
       "id": "4khdhub",
@@ -27,6 +27,19 @@
       "formats": ["m3u8"],
       "logo": "https://i.postimg.cc/hhWqkVQs/allmovieland.png",
       "contentLanguage": ["en", "hi", "ta", "te"]  
+    },
+    {
+      "id": "bingr",
+      "name": "Bingr",
+      "description": "Bingr.one — multi-server streaming (Aphelion, Polaris, Nova & more) with MP4/HLS links",
+      "version": "1.1.0",
+      "author": "Nuvio Team",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "providers/bingr.js",
+      "enabled": true,
+      "formats": ["mp4", "m3u8"],
+      "logo": "https://bingr.one/brand/logo.png",
+      "contentLanguage": ["en", "hi"]
     },
     {
       "id": "cinemacity",
